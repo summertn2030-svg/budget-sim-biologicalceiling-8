@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>The Biological Ceiling | Budget Tool</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:#0A0F1A;font-family:system-ui, -apple-system, 'Segoe UI', sans-serif;color:#EFF3FC;padding:16px;min-height:100vh;display:flex;justify-content:center;align-items:center;}
+        .dashboard{max-width:1300px;width:100%;background:rgba(8,14,26,0.95);border-radius:1.8rem;padding:1.2rem 1.5rem;border:1px solid rgba(0,180,255,0.3);box-shadow:0 20px 40px rgba(0,0,0,0.5);}
+        .header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;margin-bottom:1.2rem;border-bottom:2px solid #00A6C0;padding-bottom:0.6rem;}
+        h1{font-size:1.5rem;background:linear-gradient(135deg,#FFF,#60EFFF);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .total-badge{background:#07121F;padding:0.3rem 1rem;border-radius:40px;border-left:3px solid #2AD4FF;}
+        .total-sum{font-size:1.5rem;font-weight:700;font-family:monospace;color:#2AD4FF;}
+        .sliders-grid{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0;}
+        .card{flex:1;min-width:180px;background:#0C1322;border-radius:1.2rem;padding:1rem;border:1px solid #1E2A3A;}
+        .card h3{font-size:1rem;margin-bottom:0.2rem;}
+        .sub{font-size:0.7rem;color:#7E8FAA;margin-bottom:0.8rem;border-left:2px solid #2AD4FF;padding-left:8px;}
+        .amount-row{display:flex;justify-content:space-between;margin:10px 0 5px;}
+        .dollar{font-size:1.3rem;font-weight:700;font-family:monospace;}
+        .percent{font-size:0.8rem;background:#16212E;padding:0.2rem 0.6rem;border-radius:20px;}
+        input[type="range"]{width:100%;height:6px;-webkit-appearance:none;background:#1E2A3C;border-radius:10px;margin:10px 0;}
+        input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#2AD4FF;border-radius:50%;cursor:pointer;border:2px solid white;}
+        .insight-area{display:flex;flex-wrap:wrap;gap:1rem;margin:1rem 0;}
+        .viz-card{flex:1;background:#0A1020;border-radius:1.2rem;padding:0.8rem;text-align:center;}
+        canvas{max-width:140px;width:100%;background:#07101c;border-radius:50%;}
+        .legend{display:flex;justify-content:center;gap:8px;font-size:0.65rem;margin-top:8px;flex-wrap:wrap;}
+        .impact-card{flex:1.5;background:#0C1322;border-radius:1.2rem;padding:0.8rem;border-left:3px solid #2AD4FF;}
+        .micro-bar{margin:6px 0;height:6px;background:#1F2A3A;border-radius:4px;overflow:hidden;}
+        .micro-fill{height:6px;background:#2AD4FF;}
+        .impact-text{font-size:0.75rem;line-height:1.4;}
+        .impact-item{margin-bottom:10px;}
+        
+        /* Interactive Submit & Network Controls Layout */
+        .submit-area { display: flex; justify-content: center; margin: 1rem 0; }
+        .submit-btn { background: linear-gradient(135deg, #00B4D8, #0077B6); color: white; border: none; font-size: 1.1rem; font-weight: bold; padding: 12px 36px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,180,255,0.4); transition: transform 0.2s; }
+        .submit-btn:hover { transform: scale(1.03); }
+        .submit-btn:active { transform: scale(0.98); }
+        
+        .session-host-panel{background:#071222;border-radius:1.2rem;margin-top:1rem;padding:0.8rem 1rem;border:1px solid #00A0C0;}
+        .session-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;}
+        .session-btn{background:#1B2A3F;border:none;color:white;padding:5px 12px;border-radius:30px;font-size:0.7rem;cursor:pointer;}
+        .session-btn.primary{background:#0077b6;}
+        .session-btn.danger{background:#5a2a2a;}
+        .sessions-list{background:#0A1120;border-radius:1rem;padding:8px;margin:8px 0;max-height:160px;overflow-y:auto;}
+        .session-item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #1F2F44;font-size:0.7rem;}
+        .avg-stats{display:flex;gap:0.8rem;flex-wrap:wrap;margin-top:8px;background:#0A1120;padding:8px;border-radius:1rem;font-size:0.7rem;}
+        .avg-item{flex:1;}
+        .network-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #112233; color: #2AD4FF; display: inline-block; }
+        .small-note{font-size:0.6rem;color:#6F8FAC;margin-top:6px;text-align:right;}
+        hr{margin:6px 0;border-color:#1F2F44;}
+        @media (max-width:700px){.dashboard{padding:0.8rem;}.dollar{font-size:1rem;}}
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="header">
+        <div><h1>🧬 THE BIOLOGICAL CEILING</h1><p style="font-size:0.7rem;">Neo-Forum · Clinical Allocator</p></div>
+        <div class="total-badge"><div class="total-sum">$10,000,000</div><div style="font-size:0.65rem;">fixed budget</div></div>
+    </div>
+
+    <!-- Sliders Form Grid -->
+    <div class="sliders-grid">
+        <div class="card"><h3>🧬 ELT Research</h3><div class="sub">Epigenetic Longevity Targets / Cellular Aging</div><div class="amount-row"><span class="dollar" id="eltDollar">$0</span><span class="percent" id="eltPercent">0%</span></div><input type="range" id="eltSlider" min="0" max="100" step="1" value="33"></div>
+        <div class="card"><h3>🖨️ 3D Bio-Printing</h3><div class="sub">Printing living tissue & organ scaffolds</div><div class="amount-row"><span class="dollar" id="bioDollar">$0</span><span class="percent" id="bioPercent">0%</span></div><input type="range" id="bioSlider" min="0" max="100" step="1" value="33"></div>
+        <div class="card"><h3>💊 Existing Medicine</h3><div class="sub">Antibiotics, ER treatments, current care</div><div class="amount-row"><span class="dollar" id="existDollar">$0</span><span class="percent" id="existPercent">0%</span></div><input type="range" id="existSlider" min="0" max="100" step="1" value="34"></div>
+    </div>
+
+    <!-- Live Calculated Analytics Outputs -->
+    <div class="insight-area">
+        <div class="viz-card"><div><strong>💰 Budget Split</strong></div><canvas id="budgetPie" width="160" height="160"></canvas><div class="legend" id="legendDiv"></div></div>
+        <div class="impact-card"><strong>📊 What Your Funding Does</strong><div id="impactContent" class="impact-text"></div></div>
+    </div>
+
+    <!-- Submission Interface for Active Users -->
+    <div class="submit-area">
+        <button id="submitVoteBtn" class="submit-btn">📤 Submit Your Allocation</button>
+    </div>
+
+    <!-- Central Hosting & Realtime Aggregation Engine -->
+    <div class="session-host-panel">
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+            <div><strong>🎭 Session Management Hub</strong> <span class="network-status" id="netStatus">Checking Connection...</span></div>
+            <div class="session-buttons">
+                <button id="newSessionBtn" class="session-btn primary">+ New Fresh Session</button>
+                <button id="deleteSessionBtn" class="session-btn danger">🗑 Clear Session Responses</button>
+            </div>
+        </div>
+        <div class="sessions-list" id="sessionsList">Initializing Live Stream...</div>
+        <hr>
+        <div><strong>📊 Average Aggregate Insights (Real-time Board Responses)</strong></div>
+        <div class="avg-stats" id="avgStats">
+            <div>🧬 ELT Research: <strong id="avgElt">$0</strong> (<span id="avgEltPct">0%</span>)</div>
+            <div>🖨️ 3D Bio-Printing: <strong id="avgBio">$0</strong> (<span id="avgBioPct">0%</span>)</div>
+            <div>💊 Existing Medicine: <strong id="avgExist">$0</strong> (<span id="avgExistPct">0%</span>)</div>
+            <div>📋 Total Votes Collected: <strong id="sessionCount">0</strong></div>
+        </div>
+        <div class="small-note">💡 Copy the browser address link to share this tool with other board participants. When they move the sliders and press "Submit Your Allocation", their configuration is compiled globally into the current active room metrics. Toggle sessions above to establish pristine blank environments.</div>
+    </div>
+</div>
+
+<script>
+(function(){
+    const TOTAL = 10000000;
+    
+    // Core Elements
+    const eltSlide = document.getElementById('eltSlider'), bioSlide = document.getElementById('bioSlider'), existSlide = document.getElementById('existSlider');
+    const eltDollar = document.getElementById('eltDollar'), bioDollar = document.getElementById('bioDollar'), existDollar = document.getElementById('existDollar');
+    const eltPct = document.getElementById('eltPercent'), bioPct = document.getElementById('bioPercent'), existPct = document.getElementById('existPercent');
+    const canvas = document.getElementById('budgetPie'), ctx = canvas.getContext('2d');
+    const impactDiv = document.getElementById('impactContent');
+    const sessionsDiv = document.getElementById('sessionsList');
+    const netStatus = document.getElementById('netStatus');
+    
+    // Aggregation Elements
+    const avgElt = document.getElementById('avgElt'), avgBio = document.getElementById('avgBio'), avgExist = document.getElementById('avgExist');
+    const avgEltPct = document.getElementById('avgEltPct'), avgBioPct = document.getElementById('avgBioPct'), avgExistPct = document.getElementById('avgExistPct');
+    const sessionCountSpan = document.getElementById('sessionCount');
+    
+    let currentElt=0.33, currentBio=0.33, currentExist=0.34;
+    
+    /* 
+       GLOBAL SYNC LAYER
+       Since standard static HTML cannot preserve cross-network instances, this queries a public distributed JSON storage register.
+       The window URL parameters track session spaces automatically so you can maintain distinct data buckets.
+    */
+    let urlParams = new URLSearchParams(window.location.search);
+    let activeSessionKey = urlParams.get('session') || "ceiling_default_session_v1";
+    let cloudEndpoint = `https://keyvalue.xyz/v1/${activeSessionKey}`;
+    let votesDatabase = [];
+
+    // Initialize Network State
+    async function syncCloudData() {
+        try {
+            let response = await fetch(cloudEndpoint);
+            if (response.status === 404) {
+                // Initialize clean instance register if missing
+                await saveToCloud([]);
+                votesDatabase = [];
+            } else {
+                votesDatabase = await response.json();
+            }
+            netStatus.innerText = `Connected: ${activeSessionKey}`;
+            renderDataStack();
+        } catch(err) {
+            netStatus.innerText = "Offline Mode (Local Cache Only)";
+            console.error("Network communication failed. Using local failback.", err);
+        }
+    }
+
+    async function saveToCloud(dataArray) {
+        try {
+            await fetch(cloudEndpoint, {
+                method: 'POST',
+                body: JSON.stringify(dataArray),
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch(e) {
+            console.warn("Could not sync mutation to external channel", e);
+        }
+    }
+
+    // Process Form Submissions
+    async function executeVoteSubmission() {
+        netStatus.innerText = "Sending Data Packet...";
+        await syncCloudData(); // Pull up-to-the-second pipeline entries first
+        
+        let targetVote = {
+            id: Date.now() + Math.random().toString(36).substr(2, 5),
+            elt: currentElt,
+            bio: currentBio,
+            exist: currentExist,
+            timestamp: new Date().toLocaleTimeString()
+        };
+        
+        votesDatabase.push(targetVote);
+        await saveToCloud(votesDatabase);
+        netStatus.innerText = "Allocation Logged!";
+        renderDataStack();
+        
+        setTimeout(() => { netStatus.innerText = `Connected: ${activeSessionKey}`; }, 1500);
+    }
+
+    // Switch environments via URL parameters
+    function establishFreshSession() {
+        let newRandomID = "session_" + Math.random().toString(36).substr(2, 9);
+        let updatedUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?session=' + newRandomID;
+        window.location.href = updatedUrl;
+    }
+
+    async function clearActiveSessionData() {
+        if(confirm("Are you sure you want to completely erase all historical metrics for this precise instance room?")) {
+            votesDatabase = [];
+            await saveToCloud([]);
+            renderDataStack();
+        }
+    }
+
+    function renderDataStack() {
+        if(!sessionsDiv) return;
+        sessionCountSpan.innerText = votesDatabase.length;
+        
+        if(votesDatabase.length === 0) {
+            sessionsDiv.innerHTML = '<div style="font-size:0.75rem; color:#6F8FAC; padding: 4px;">Empty Queue. Adjust the parameters above and execute a submission to register data.</div>';
+            avgElt.innerText="$0"; avgBio.innerText="$0"; avgExist.innerText="$0"; 
+            avgEltPct.innerText="0%"; avgBioPct.innerText="0%"; avgExistPct.innerText="0%"; 
+            return;
+        }
+
+        let dynamicListingHtml = '';
+        let calculations = { elt: 0, bio: 0, exist: 0 };
+
+        // Process arrays for math aggregates and item rows
+        votesDatabase.forEach((entry, index) => {
+            calculations.elt += entry.elt;
+            calculations.bio += entry.bio;
+            calculations.exist += entry.exist;
+
+            dynamicListingHtml += `
+                <div class="session-item">
+                    <div>
+                        <strong>Submission Layer #${index + 1}</strong> <span style="color:#7E8FAA; font-size:0.6rem;">at ${entry.timestamp || 'Live'}</span><br>
+                        <span style="font-size:0.65rem; color: #60EFFF;">ELT ${(entry.elt*100).toFixed(0)}% · Bio ${(entry.bio*100).toFixed(0)}% · Medicine ${(entry.exist*100).toFixed(0)}%</span>
+                    </div>
+                </div>`;
+        });
+
+        sessionsDiv.innerHTML = dynamicListingHtml;
+
+        // Compute Averages
+        let totalCount = votesDatabase.length;
+        let finalEltFactor = calculations.elt / totalCount;
+        let finalBioFactor = calculations.bio / totalCount;
+        let finalExistFactor = calculations.exist / totalCount;
+
+        avgElt.innerText = `$${Math.round(finalEltFactor * TOTAL).toLocaleString()}`;
+        avgBio.innerText = `$${Math.round(finalBioFactor * TOTAL).toLocaleString()}`;
+        avgExist.innerText = `$${Math.round(finalExistFactor * TOTAL).toLocaleString()}`;
+
+        avgEltPct.innerText = `${(finalEltFactor * 100).toFixed(1)}%`;
+        avgBioPct.innerText = `${(finalBioFactor * 100).toFixed(1)}%`;
+        avgExistPct.innerText = `${(finalExistFactor * 100).toFixed(1)}%`;
+    }
+
+    // Standard Client UI Rendering Adjustments
+    function updateFromSliders(){
+        let e = parseFloat(eltSlide.value)/100, b = parseFloat(bioSlide.value)/100, x = parseFloat(existSlide.value)/100;
+        let s = e+b+x;
+        if(Math.abs(s-1)>0.01){ let norm=1/s; e*=norm; b*=norm; x*=norm; eltSlide.value=Math.round(e*100); bioSlide.value=Math.round(b*100); existSlide.value=Math.round(x*100); }
+        currentElt=e; currentBio=b; currentExist=x;
+        eltDollar.innerText = `$${Math.round(e*TOTAL).toLocaleString()}`;
+        bioDollar.innerText = `$${Math.round(b*TOTAL).toLocaleString()}`;
+        existDollar.innerText = `$${Math.round(x*TOTAL).toLocaleString()}`;
+        eltPct.innerText = `${(e*100).toFixed(1)}%`;
+        bioPct.innerText = `${(b*100).toFixed(1)}%`;
+        existPct.innerText = `${(x*100).toFixed(1)}%`;
+        drawPie(e,b,x);
+        updateImpact(e,b,x);
+    }
+    
+    function handleSlide(changed){
+        let e=parseFloat(eltSlide.value), b=parseFloat(bioSlide.value), x=parseFloat(existSlide.value);
+        if(changed==='elt'){ let rest=b+x; if(rest===0){ b=50; x=50; }else{ let f=(100-e)/rest; b*=f; x*=f; } bioSlide.value=Math.min(100,Math.max(0,b)); existSlide.value=Math.min(100,Math.max(0,x)); }
+        else if(changed==='bio'){ let rest=e+x; if(rest===0){ e=50; x=50; }else{ let f=(100-b)/rest; e*=f; x*=f; } eltSlide.value=Math.min(100,Math.max(0,e)); existSlide.value=Math.min(100,Math.max(0,x)); }
+        else{ let rest=e+b; if(rest===0){ e=50; b=50; }else{ let f=(100-x)/rest; e*=f; b*=f; } eltSlide.value=Math.min(100,Math.max(0,e)); bioSlide.value=Math.min(100,Math.max(0,b)); }
+        updateFromSliders();
+    }
+    
+    function drawPie(e,b,x){
+        let w=canvas.width=160, h=canvas.height=160;
+        ctx.clearRect(0,0,w,h);
+        let start=-Math.PI/2;
+        let slices=[e,b,x], colors=["#1A7FAA","#3D9FD1","#00B4D8"], names=["ELT Research","3D Bio-Printing","Existing Medicine"];
+        for(let i=0;i<3;i++){
+            let angle=slices[i]*2*Math.PI, end=start+angle;
+            ctx.beginPath(); ctx.fillStyle=colors[i]; ctx.moveTo(w/2,h/2); ctx.arc(w/2,h/2,w/2-4,start,end); ctx.fill();
+            start=end;
+        }
+        let leg='';
+        for(let i=0;i<3;i++) leg+=`<span style="color:${colors[i]}">●</span> ${names[i]} ${(slices[i]*100).toFixed(0)}% `;
+        document.getElementById('legendDiv').innerHTML=leg;
+    }
+    
+    function updateImpact(e,b,x){
+        let eltMsg = e>=0.6 ? "🏆 Major breakthrough: could discover how to slow aging at cellular level. Potential to extend healthy lifespan." : 
+                    (e>=0.3 ? "📚 Solid progress: key studies on epigenetic clocks and cellular repair. Steady advancement in longevity science." : 
+                    "🔬 Limited exploration: basic lab research only. We keep the door open but progress will be slow.");
+        
+        let bioMsg = b>=0.6 ? "🖨️ Transformative: ability to print functional 3D ELTs (engineered living tissues) for transplants. Could end organ shortages." : 
+                    (b>=0.3 ? "🧫 Moderate capability: improved printing of tissue scaffolds for drug testing and wound healing prototypes." : 
+                    "🔧 Minimal printing: only small experiments possible. Real 3D printed organs remain decades away.");
+        
+        let medMsg = x>=0.6 ? "💊 Robust protection: develop new antibiotics against superbugs, strengthen emergency rooms, expand access to current treatments." : 
+                    (x>=0.3 ? "🏥 Steady maintenance: keep existing drug supply chains, support infection control, fund small clinical trials." : 
+                    "⚠️ Fragile status: only basic upkeep of today's medicines. No capacity for new antibiotics — vulnerable to future pandemics.");
+        
+        impactDiv.innerHTML = `
+            <div class="impact-item"><div class="micro-bar"><div class="micro-fill" style="width:${e*100}%"></div></div><strong>🧬 ELT Research (Aging Science):</strong> ${eltMsg}</div>
+            <div class="impact-item"><div class="micro-bar"><div class="micro-fill" style="width:${b*100}%"></div></div><strong>🖨️ 3D Bio-Printing (3D printed ELTs / Living Tissue):</strong> ${bioMsg}</div>
+            <div class="impact-item"><div class="micro-bar"><div class="micro-fill" style="width:${x*100}%"></div></div><strong>💊 Existing Medicine (Antibiotics & Hospital Care):</strong> ${medMsg}</div>`;
+    }
+    
+    // Binding Pipeline Events
+    eltSlide.addEventListener('input',()=>handleSlide('elt'));
+    bioSlide.addEventListener('input',()=>handleSlide('bio'));
+    existSlide.addEventListener('input',()=>handleSlide('exist'));
+    
+    document.getElementById('submitVoteBtn').addEventListener('click', executeVoteSubmission);
+    document.getElementById('newSessionBtn').addEventListener('click', establishFreshSession);
+    document.getElementById('deleteSessionBtn').addEventListener('click', clearActiveSessionData);
+    
+    // Initial Dynamic Processing Engine
+    syncCloudData();
+    updateFromSliders();
+
+    // Constant long-polling query check to catch data alterations made by other users over the web
+    setInterval(syncCloudData, 6000);
+})();
+</script>
+</body>
+</html>
